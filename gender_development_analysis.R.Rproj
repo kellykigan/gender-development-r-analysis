@@ -1,13 +1,180 @@
-Version: 1.0
-
-RestoreWorkspace: Default
-SaveWorkspace: Default
-AlwaysSaveHistory: Default
-
-EnableCodeIndexing: Yes
-UseSpacesForTab: Yes
-NumSpacesForTab: 2
-Encoding: UTF-8
-
-RnwWeave: Sweave
-LaTeX: pdfLaTeX
+install.packages("tidyverse")
+library(tidyverse)
+gdi <- read_csv(file.choose())
+head(gdi)
+tail(gdi)
+dim(gdi)
+str(gdi)
+summary(gdi)
+sapply(gdi, class)
+colSums(is.na(gdi))
+sum(is.na(gdi$`Gender Development Index (2021)`))
+mean(is.na(gdi$`Gender Development Index (2021)`)) * 100
+sum(duplicated(gdi))
+sum(duplicated(gdi$ISO3))
+sum(duplicated(gdi$Country))
+gdi <- gdi %>%
+  rename(
+    country = Country,
+    iso3 = ISO3,
+    continent = Continent,
+    hemisphere = Hemisphere,
+    development_group = `Human Development Groups`,
+    developing_region = `UNDP Developing Regions`,
+    hdi_rank = `HDI Rank (2021)`,
+    gdi_2021 = `Gender Development Index (2021)`
+  )
+gdi$gdi_2021
+summary(gdi$gdi_2021)
+mean(gdi$gdi_2021, na.rm = TRUE)
+median(gdi$gdi_2021, na.rm = TRUE)
+sd(gdi$gdi_2021, na.rm = TRUE)
+min(gdi$gdi_2021, na.rm = TRUE)
+max(gdi$gdi_2021, na.rm = TRUE)
+gdi %>%
+  group_by(development_group) %>%
+  summarise(
+    n = sum(!is.na(gdi_2021)),
+    mean_gdi = mean(gdi_2021, na.rm = TRUE),
+    median_gdi = median(gdi_2021, na.rm = TRUE),
+    sd_gdi = sd(gdi_2021, na.rm = TRUE)
+  )
+ggplot(gdi, aes(x = gdi_2021)) +
+  geom_histogram(bins = 20, na.rm = TRUE) +
+  labs(
+    title = "Distribution of Gender Development Index, 2021",
+    x = "Gender Development Index",
+    y = "Number of countries"
+  )
+ggplot(gdi, aes(
+  x = development_group,
+  y = gdi_2021
+)) +
+  geom_boxplot(na.rm = TRUE) +
+  labs(
+    title = "Gender Development Index by Human Development Group",
+    x = "Human Development Group",
+    y = "Gender Development Index"
+  )
+gdi %>%
+  group_by(continent) %>%
+  summarise(
+    n = sum(!is.na(gdi_2021)),
+    mean_gdi = mean(gdi_2021, na.rm = TRUE),
+    median_gdi = median(gdi_2021, na.rm = TRUE),
+    sd_gdi = sd(gdi_2021, na.rm = TRUE)
+  )
+ggplot(gdi, aes(
+  x = continent,
+  y = gdi_2021
+)) +
+  geom_boxplot(na.rm = TRUE) +
+  labs(
+    title = "Gender Development Index by Continent, 2021",
+    x = "Continent",
+    y = "Gender Development Index"
+  )
+low_gdi <- gdi %>%
+  filter(development_group == "Low") %>%
+  pull(gdi_2021)
+very_high_gdi <- gdi %>%
+  filter(development_group == "Very High") %>%
+  pull(gdi_2021)
+t.test(low_gdi, very_high_gdi)
+cor(
+  gdi$hdi_rank,
+  gdi$gdi_2021,
+  use = "complete.obs"
+)
+ggplot(gdi, aes(
+  x = hdi_rank,
+  y = gdi_2021
+)) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth(method = "lm", se = TRUE, na.rm = TRUE) +
+  labs(
+    title = "Relationship Between HDI Rank and Gender Development Index",
+    x = "HDI Rank, 2021",
+    y = "Gender Development Index, 2021"
+  )
+model1 <- lm(gdi_2021 ~ hdi_rank, data = gdi)
+summary(model1)
+summary(model1)
+confint(model1)
+model2 <- lm(
+  gdi_2021 ~ hdi_rank + continent,
+  data = gdi
+)
+summary(model2)
+model3 <- lm(
+  gdi_2021 ~ hdi_rank + continent + development_group,
+  data = gdi
+)
+summary(model3)
+par(mfrow = c(2, 2))
+plot(model1)
+par(mfrow = c(1, 1))
+boxplot(gdi$gdi_2021,
+        main = "GDI 2021")
+gdi_long <- gdi %>%
+  pivot_longer(
+    cols = starts_with("Gender Development Index"),
+    names_to = "year",
+    values_to = "gdi"
+  )
+gdi_long <- read_csv("Gender Development Index.csv") %>%
+  pivot_longer(
+    cols = starts_with("Gender Development Index"),
+    names_to = "year",
+    values_to = "gdi"
+  )
+gdi_long <- gdi_long %>%
+  mutate(
+    year = as.numeric(str_extract(year, "\\d{4}"))
+  )
+head(gdi_long)
+gdi_long %>%
+  group_by(year) %>%
+  summarise(
+    mean_gdi = mean(gdi, na.rm = TRUE),
+    n = sum(!is.na(gdi))
+  )
+print(n=...)
+gdi_long %>%
+  group_by(year) %>%
+  summarise(
+    mean_gdi = mean(gdi, na.rm = TRUE)
+  ) %>%
+  ggplot(aes(x = year, y = mean_gdi)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Average Gender Development Index Over Time",
+    x = "Year",
+    y = "Average Gender Development Index"
+  )
+gdi_change <- gdi %>%
+  filter(
+    !is.na(`Gender Development Index (1990)`),
+    !is.na(gdi_2021)
+  ) %>%
+  mutate(
+    gdi_change =
+      gdi_2021 - `Gender Development Index (1990)`
+  )
+summary(gdi_change$gdi_change)
+mean(gdi_change$gdi_change)
+gdi_change %>%
+  select(country, gdi_change) %>%
+  arrange(desc(gdi_change)) %>%
+  head(10)
+gdi_change %>%
+  select(country, gdi_change) %>%
+  arrange(gdi_change) %>%
+  head(10)
+anova_model <- aov(
+  gdi_2021 ~ development_group,
+  data = gdi
+)
+summary(anova_model)
+TukeyHSD(anova_model)
