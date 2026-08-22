@@ -1,18 +1,124 @@
+# ============================================================
+# GENDER DEVELOPMENT INDEX: QUANTITATIVE DEVELOPMENT RESEARCH
+# ============================================================
+#
+# Purpose:
+# This script analyses country-level Gender Development Index (GDI)
+# data using R. The workflow moves from data inspection and cleaning
+# to descriptive statistics, visualisation, group comparisons,
+# correlation, regression, and longitudinal analysis.
+#
+# The analysis is intended to demonstrate foundational quantitative
+# research skills relevant to development research.
+#
+# IMPORTANT:
+# The analysis identifies patterns and associations in observational
+# country-level data. The results should NOT be interpreted as proof
+# of causal relationships.
+# ============================================================
+
+
+# ============================================================
+# 1. SET UP R AND LOAD THE REQUIRED PACKAGE
+# ============================================================
+
+# Install the tidyverse package.
+# This only needs to be done once on your computer.
+# If tidyverse is already installed, you can skip this line.
 install.packages("tidyverse")
+
+# Load tidyverse into the current R session.
+# tidyverse provides functions used for data import, cleaning,
+# transformation and visualisation, including read_csv(),
+# filter(), group_by(), summarise(), pivot_longer(), and ggplot().
 library(tidyverse)
+
+
+# ============================================================
+# 2. IMPORT THE DATA
+# ============================================================
+
+# Import the CSV dataset.
+#
+# file.choose() opens a file-selection window so that the dataset
+# can be selected manually. This is useful while learning R.
+#
+# For a fully reproducible GitHub project, the file path can later
+# be replaced with a relative path such as:
+#
+# gdi <- read_csv("data/Gender Development Index.csv")
+#
+# provided that the dataset is legally permitted to be stored there.
 gdi <- read_csv(file.choose())
+
+
+# ============================================================
+# 3. FIRST LOOK AT THE DATA
+# ============================================================
+
+# Display the first six observations.
+# This gives us an initial view of the variables and values.
 head(gdi)
+
+# Display the last six observations.
+# This helps check how the dataset ends and whether there are
+# unusual observations at the bottom.
 tail(gdi)
+
+# Check the dimensions of the dataset.
+# The first number is the number of rows (observations).
+# The second number is the number of columns (variables).
 dim(gdi)
+
+# Examine the structure of the dataset.
+# This shows variable names, data types and example values.
 str(gdi)
+
+# Produce a summary of each variable.
+# For numeric variables, this provides statistics such as
+# minimum, median, mean and maximum.
 summary(gdi)
+
+# Check the class/data type of every variable.
+# This helps identify whether variables have been imported as
+# numeric, character, logical, factor, or another type.
 sapply(gdi, class)
+
+
+# ============================================================
+# 4. ASSESS MISSING DATA AND DUPLICATES
+# ============================================================
+
+# Count missing values in every variable.
+# Missing values are important because they determine how much
+# usable information is available for each analysis.
 colSums(is.na(gdi))
+
+# Count missing values specifically for the 2021 GDI variable.
 sum(is.na(gdi$`Gender Development Index (2021)`))
+
+# Calculate the percentage of 2021 GDI observations that are missing.
 mean(is.na(gdi$`Gender Development Index (2021)`)) * 100
+
+# Check for completely duplicated rows.
+# A value of zero means there are no completely identical rows.
 sum(duplicated(gdi))
+
+# Check whether ISO3 country codes are duplicated.
+# ISO3 codes should normally uniquely identify countries.
 sum(duplicated(gdi$ISO3))
+
+# Check whether country names are duplicated.
 sum(duplicated(gdi$Country))
+
+
+# ============================================================
+# 5. RENAME VARIABLES FOR EASIER ANALYSIS
+# ============================================================
+
+# Rename long or difficult-to-use variable names.
+# Shorter names make the analysis easier to read and reduce
+# the need for backticks around variable names.
 gdi <- gdi %>%
   rename(
     country = Country,
@@ -24,13 +130,51 @@ gdi <- gdi %>%
     hdi_rank = `HDI Rank (2021)`,
     gdi_2021 = `Gender Development Index (2021)`
   )
+
+
+# ============================================================
+# 6. EXPLORE THE 2021 GDI VARIABLE
+# ============================================================
+
+# Display the individual 2021 GDI values.
+# This is a simple check of the outcome variable before
+# calculating descriptive statistics.
 gdi$gdi_2021
+
+# Produce a five-number summary of 2021 GDI.
 summary(gdi$gdi_2021)
+
+# Calculate the mean GDI.
+# na.rm = TRUE tells R to ignore missing observations.
 mean(gdi$gdi_2021, na.rm = TRUE)
+
+# Calculate the median GDI.
 median(gdi$gdi_2021, na.rm = TRUE)
+
+# Calculate the standard deviation.
+# This measures how spread out GDI values are around the mean.
 sd(gdi$gdi_2021, na.rm = TRUE)
+
+# Identify the minimum observed GDI.
 min(gdi$gdi_2021, na.rm = TRUE)
+
+# Identify the maximum observed GDI.
 max(gdi$gdi_2021, na.rm = TRUE)
+
+
+# ============================================================
+# 7. DESCRIPTIVE STATISTICS BY HUMAN DEVELOPMENT GROUP
+# ============================================================
+
+# Compare GDI across the four human development groups.
+#
+# group_by() separates the data into groups.
+# summarise() then calculates statistics within each group.
+#
+# n = number of countries with non-missing GDI.
+# mean_gdi = average GDI.
+# median_gdi = middle GDI value.
+# sd_gdi = variation in GDI within the group.
 gdi %>%
   group_by(development_group) %>%
   summarise(
@@ -39,6 +183,16 @@ gdi %>%
     median_gdi = median(gdi_2021, na.rm = TRUE),
     sd_gdi = sd(gdi_2021, na.rm = TRUE)
   )
+
+
+# ============================================================
+# 8. VISUALISE THE DISTRIBUTION OF GDI
+# ============================================================
+
+# Create a histogram showing how 2021 GDI values are distributed.
+#
+# A histogram helps us understand whether GDI values are spread
+# widely across countries or concentrated within a narrower range.
 ggplot(gdi, aes(x = gdi_2021)) +
   geom_histogram(bins = 20, na.rm = TRUE) +
   labs(
@@ -46,6 +200,20 @@ ggplot(gdi, aes(x = gdi_2021)) +
     x = "Gender Development Index",
     y = "Number of countries"
   )
+
+
+# ============================================================
+# 9. COMPARE GDI ACROSS HUMAN DEVELOPMENT GROUPS
+# ============================================================
+
+# Create a boxplot comparing the distribution of GDI across
+# human development groups.
+#
+# Boxplots allow us to compare:
+# - central tendency,
+# - spread,
+# - potential outliers,
+# - and differences between groups.
 ggplot(gdi, aes(
   x = development_group,
   y = gdi_2021
@@ -56,6 +224,13 @@ ggplot(gdi, aes(
     x = "Human Development Group",
     y = "Gender Development Index"
   )
+
+
+# ============================================================
+# 10. COMPARE GDI ACROSS CONTINENTS
+# ============================================================
+
+# Calculate descriptive statistics for GDI within each continent.
 gdi %>%
   group_by(continent) %>%
   summarise(
@@ -64,6 +239,8 @@ gdi %>%
     median_gdi = median(gdi_2021, na.rm = TRUE),
     sd_gdi = sd(gdi_2021, na.rm = TRUE)
   )
+
+# Visualise the distribution of GDI by continent.
 ggplot(gdi, aes(
   x = continent,
   y = gdi_2021
@@ -74,18 +251,67 @@ ggplot(gdi, aes(
     x = "Continent",
     y = "Gender Development Index"
   )
+
+
+# ============================================================
+# 11. DIFFERENCE IN MEANS: LOW VS VERY HIGH DEVELOPMENT
+# ============================================================
+
+# Extract 2021 GDI values for countries in the Low
+# Human Development group.
 low_gdi <- gdi %>%
   filter(development_group == "Low") %>%
   pull(gdi_2021)
+
+# Extract 2021 GDI values for countries in the Very High
+# Human Development group.
 very_high_gdi <- gdi %>%
   filter(development_group == "Very High") %>%
   pull(gdi_2021)
+
+# Conduct an independent-samples t-test.
+#
+# The test examines whether the mean GDI differs statistically
+# between the Low and Very High development groups.
+#
+# This is different from simply observing that the two group
+# means are different: the t-test evaluates whether the observed
+# difference is statistically distinguishable from zero under
+# the assumptions of the test.
 t.test(low_gdi, very_high_gdi)
+
+
+# ============================================================
+# 12. CORRELATION BETWEEN HDI RANK AND GDI
+# ============================================================
+
+# Calculate the Pearson correlation between HDI rank and GDI.
+#
+# use = "complete.obs" tells R to use observations with complete
+# values for both variables.
+#
+# Important interpretation:
+# HDI rank is coded so that a LOWER numerical rank represents
+# better human development. Therefore, a negative correlation
+# between rank and GDI can correspond substantively to a positive
+# relationship between development position and GDI.
 cor(
   gdi$hdi_rank,
   gdi$gdi_2021,
   use = "complete.obs"
 )
+
+
+# ============================================================
+# 13. VISUALISE THE RELATIONSHIP BETWEEN HDI RANK AND GDI
+# ============================================================
+
+# Create a scatterplot showing the relationship between HDI rank
+# and 2021 GDI.
+#
+# Each point represents a country.
+# The fitted regression line provides a visual summary of the
+# average linear relationship.
 ggplot(gdi, aes(
   x = hdi_rank,
   y = gdi_2021
@@ -97,49 +323,185 @@ ggplot(gdi, aes(
     x = "HDI Rank, 2021",
     y = "Gender Development Index, 2021"
   )
+
+
+# ============================================================
+# 14. SIMPLE LINEAR REGRESSION
+# ============================================================
+
+# Estimate a simple linear regression model.
+#
+# The outcome variable is GDI.
+# The explanatory variable is HDI rank.
+#
+# The model asks:
+# "Is HDI rank statistically associated with GDI?"
+#
+# This is an observational association, not a causal estimate.
 model1 <- lm(gdi_2021 ~ hdi_rank, data = gdi)
+
+# Display the regression results.
+# This includes coefficients, standard errors, t-statistics,
+# p-values and model fit statistics such as R-squared.
 summary(model1)
+
+# Display the regression results again.
+# This repeats the previous output and is retained here to
+# reflect the original analysis script.
 summary(model1)
+
+# Calculate confidence intervals for the regression coefficients.
 confint(model1)
+
+
+# ============================================================
+# 15. MULTIPLE LINEAR REGRESSION: ADD CONTINENT
+# ============================================================
+
+# Add continent as an additional explanatory variable.
+#
+# This allows us to examine the association between HDI rank
+# and GDI while accounting for differences between continents.
+#
+# Continent is treated as a categorical variable by R.
 model2 <- lm(
   gdi_2021 ~ hdi_rank + continent,
   data = gdi
 )
+
+# Examine the model results.
 summary(model2)
+
+
+# ============================================================
+# 16. MULTIPLE LINEAR REGRESSION: ADD DEVELOPMENT GROUP
+# ============================================================
+
+# Add human development group to the model.
+#
+# This model examines GDI in relation to:
+# - HDI rank,
+# - continent,
+# - and human development group.
+#
+# The additional variables allow a more detailed examination
+# of whether the association with HDI rank remains after
+# accounting for other observed group characteristics.
 model3 <- lm(
   gdi_2021 ~ hdi_rank + continent + development_group,
   data = gdi
 )
+
+# Examine the results of the third regression model.
 summary(model3)
+
+
+# ============================================================
+# 17. BASIC REGRESSION DIAGNOSTICS
+# ============================================================
+
+# Arrange four standard diagnostic plots in a 2-by-2 layout.
+#
+# These plots help assess whether the assumptions of linear
+# regression appear reasonable.
 par(mfrow = c(2, 2))
+
+# Produce diagnostic plots for the simple regression model.
 plot(model1)
+
+# Return the graphics layout to a single plot.
 par(mfrow = c(1, 1))
-boxplot(gdi$gdi_2021,
-        main = "GDI 2021")
+
+# Produce a simple boxplot of the 2021 GDI values.
+# This provides another visual check for unusually high or low
+# observations.
+boxplot(
+  gdi$gdi_2021,
+  main = "GDI 2021"
+)
+
+
+# ============================================================
+# 18. RESHAPE THE DATA FOR LONGITUDINAL ANALYSIS
+# ============================================================
+
+# Convert the annual GDI variables from wide format to long format.
+#
+# Wide format has a separate column for each year.
+# Long format creates:
+#   year = the year
+#   gdi  = the GDI value for that year
+#
+# pivot_longer() makes the dataset easier to analyse over time.
+#
+# This first transformation uses the already-imported dataset.
 gdi_long <- gdi %>%
   pivot_longer(
     cols = starts_with("Gender Development Index"),
     names_to = "year",
     values_to = "gdi"
   )
+
+# The original analysis then re-imported the CSV and repeated the
+# wide-to-long transformation. This version is retained because
+# it represents the original workflow, but in a final polished
+# script you would normally choose ONE of the two approaches.
+#
+# The following line assumes the CSV is in the working directory.
 gdi_long <- read_csv("Gender Development Index.csv") %>%
   pivot_longer(
     cols = starts_with("Gender Development Index"),
     names_to = "year",
     values_to = "gdi"
   )
+
+# Extract the four-digit year from the original variable names
+# and convert it from text to numeric.
 gdi_long <- gdi_long %>%
   mutate(
     year = as.numeric(str_extract(year, "\\d{4}"))
   )
+
+# Inspect the reshaped dataset.
 head(gdi_long)
+
+
+# ============================================================
+# 19. CALCULATE AVERAGE GDI BY YEAR
+# ============================================================
+
+# Calculate the average GDI for each year.
+#
+# n records the number of non-missing observations contributing
+# to the yearly mean.
+#
+# Tracking n is important because the number of countries may
+# differ from year to year due to missing observations.
 gdi_long %>%
   group_by(year) %>%
   summarise(
     mean_gdi = mean(gdi, na.rm = TRUE),
     n = sum(!is.na(gdi))
   )
-print(n=...)
+
+# NOTE:
+# The original script contained:
+#
+# print(n=...)
+#
+# This appears to have been a placeholder rather than a completed
+# R command, so it is not included as executable code here.
+
+
+# ============================================================
+# 20. VISUALISE AVERAGE GDI OVER TIME
+# ============================================================
+
+# Calculate the mean GDI for each year and plot the resulting trend.
+#
+# A line chart is appropriate because year is ordered over time.
+# It helps identify whether average GDI has generally increased,
+# decreased, or remained stable.
 gdi_long %>%
   group_by(year) %>%
   summarise(
@@ -153,28 +515,101 @@ gdi_long %>%
     x = "Year",
     y = "Average Gender Development Index"
   )
+
+
+# ============================================================
+# 21. CALCULATE CHANGE IN GDI, 1990 TO 2021
+# ============================================================
+
+# Keep countries that have both a 1990 GDI observation and a
+# 2021 GDI observation.
+#
+# This ensures that the calculated change compares the same
+# country at the beginning and end of the period.
 gdi_change <- gdi %>%
   filter(
     !is.na(`Gender Development Index (1990)`),
     !is.na(gdi_2021)
   ) %>%
   mutate(
+    # Calculate the change in GDI between 1990 and 2021.
+    # A positive value means GDI increased over the period.
     gdi_change =
       gdi_2021 - `Gender Development Index (1990)`
   )
+
+# Summarise the distribution of changes across countries.
 summary(gdi_change$gdi_change)
+
+# Calculate the average change in GDI between 1990 and 2021.
 mean(gdi_change$gdi_change)
+
+# Identify the ten countries with the largest increases in GDI.
 gdi_change %>%
   select(country, gdi_change) %>%
   arrange(desc(gdi_change)) %>%
   head(10)
+
+# Identify the ten countries with the smallest changes in GDI.
 gdi_change %>%
   select(country, gdi_change) %>%
   arrange(gdi_change) %>%
   head(10)
+
+
+# ============================================================
+# 22. ONE-WAY ANOVA: GDI ACROSS DEVELOPMENT GROUPS
+# ============================================================
+
+# Estimate a one-way ANOVA model.
+#
+# The question is:
+# "Do mean GDI values differ across the human development groups?"
+#
+# Unlike the earlier t-test, which compared two groups, ANOVA
+# allows comparison of more than two groups simultaneously.
 anova_model <- aov(
   gdi_2021 ~ development_group,
   data = gdi
 )
+
+# Display the ANOVA results.
 summary(anova_model)
+
+# Conduct Tukey's HSD post-hoc test.
+#
+# If the overall ANOVA indicates differences between groups,
+# Tukey's test helps identify which pairs of groups differ.
 TukeyHSD(anova_model)
+
+
+# ============================================================
+# 23. END OF ANALYSIS
+# ============================================================
+
+# The analysis has now covered:
+#
+# 1. Data import
+# 2. Data inspection
+# 3. Missing-data assessment
+# 4. Duplicate checks
+# 5. Variable renaming
+# 6. Descriptive statistics
+# 7. Grouped descriptive statistics
+# 8. Data visualisation
+# 9. Difference-in-means testing
+# 10. Correlation
+# 11. Simple linear regression
+# 12. Multiple linear regression
+# 13. Regression diagnostics
+# 14. Longitudinal data preparation
+# 15. Trends over time
+# 16. Change between 1990 and 2021
+# 17. One-way ANOVA
+# 18. Post-hoc group comparisons
+#
+# Remember:
+# The results describe patterns and associations in country-level
+# observational data. They should not be interpreted as causal
+# effects without a stronger research design.
+# ============================================================
