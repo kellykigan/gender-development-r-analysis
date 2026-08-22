@@ -26,19 +26,9 @@ The dataset contains:
 
 ## Data Availability
 
-## Data Availability
-
 The raw dataset is included in this repository because redistribution is permitted by the original data provider.
 
 The dataset is provided for research, educational, and reproducibility purposes in accordance with the terms specified by the original data provider.
-
-## Data Source
-
-Original source:
-
-[INSERT OFFICIAL DATA SOURCE]
-
-Users should consult the original data provider for the authoritative version of the dataset and the applicable data-use terms.
 
 ## Reproducibility
 
