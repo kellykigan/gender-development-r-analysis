@@ -1,5 +1,5 @@
 # ============================================================
-# GENDER DEVELOPMENT INDEX: QUANTITATIVE DEVELOPMENT RESEARCH
+# GENDER DEVELOPMENT INDEX: QUANTITATIVE ANALYSIS
 # ============================================================
 #
 # Purpose:
@@ -7,9 +7,6 @@
 # data using R. The workflow moves from data inspection and cleaning
 # to descriptive statistics, visualisation, group comparisons,
 # correlation, regression, and longitudinal analysis.
-#
-# The analysis is intended to demonstrate my foundational quantitative
-# research skills relevant to development research.
 #
 # IMPORTANT:
 # The analysis identifies patterns and associations in observational
