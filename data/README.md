@@ -26,9 +26,23 @@ The dataset contains:
 
 ## Data Availability
 
-The raw dataset is not redistributed in this repository unless permitted by the original data provider's licensing and usage conditions.
+## Data Availability
 
-Users seeking to reproduce the analysis should obtain the dataset from the original source and place it in the appropriate local data directory.
+The raw dataset is included in this repository because redistribution is permitted by the original data provider.
+
+The dataset is provided for research, educational, and reproducibility purposes in accordance with the terms specified by the original data provider.
+
+## Data Source
+
+Original source:
+
+[INSERT OFFICIAL DATA SOURCE]
+
+Users should consult the original data provider for the authoritative version of the dataset and the applicable data-use terms.
+
+## Reproducibility
+
+The dataset is included in the `data/` directory so that users can reproduce the analysis using the R script provided in the `R/` directory.
 
 ## Data Quality Considerations
 
